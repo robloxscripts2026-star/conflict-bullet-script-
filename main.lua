@@ -24,7 +24,7 @@ boton.BackgroundColor3 = Color3.fromRGB(255, 69, 0)
 boton.TextColor3 = Color3.fromRGB(0, 0, 0)
 boton.TextSize = 16
 boton.Font = Enum.Font.FredokaOne
-boton.Text = "☢️ FARMEAR DIAMANTES ☢️"
+boton.Text = "💎 FARMEAR DIAMANTES 💎"
 boton.BorderSizePixel = 5
 boton.Parent = screenGui
 
