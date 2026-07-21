@@ -6,7 +6,11 @@ local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
 
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Character = LocalPlayer.Character
+if not Character then
+    LocalPlayer.CharacterAdded:Wait()
+    Character = LocalPlayer.Character
+end
 
 LocalPlayer.CharacterAdded:Connect(function(newChar)
     Character = newChar
