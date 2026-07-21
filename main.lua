@@ -28,12 +28,12 @@ local Config = {
 
 -- Paleta de Colores por Sección
 local Theme = {
-    Main = Color3.fromRGB(0, 255, 230),    -- Cian  
-    Combat = Color3.fromRGB(255, 60, 80),  -- Rojo 
-    Visuals = Color3.fromRGB(255, 210, 0), -- Amarillo 
-    Misc = Color3.fromRGB(160, 80, 255)    -- Morado 
+    Main = Color3.fromRGB(160, 80, 255) 
+    Combat = Color3.fromRGB(160, 80, 255)
+    Visuals = Color3.fromRGB(160, 80, 255)
+    Misc = Color3.fromRGB(160, 80, 255)
 }
-
+ 
 --  Función de arrastrar 
 local function MakeSmoothDrag(frame, dragHandle)
     local dragging = false
@@ -41,6 +41,9 @@ local function MakeSmoothDrag(frame, dragHandle)
     local targetPos = frame.Position
 
     dragHandle.InputBegan:Connect(function(input)
+    
+        if Config.LockUI then return end 
+
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
@@ -55,19 +58,20 @@ local function MakeSmoothDrag(frame, dragHandle)
     end)
 
     dragHandle.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        if not Config.LockUI and dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             dragInput = input
         end
     end)
 
     RunService.RenderStepped:Connect(function()
-        if dragging and dragInput then
+        if dragging and dragInput and not Config.LockUI then
             local delta = dragInput.Position - dragStart
             targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
         frame.Position = frame.Position:Lerp(targetPos, 0.15)
     end)
 end
+
 
 --  Contenedor Principal
 local ScreenGui;
@@ -318,30 +322,44 @@ PageContainer.Position = UDim2.new(0, 110, 0, 42)
 PageContainer.BackgroundTransparency = 1
 PageContainer.Parent = MainFrame
 
-local OpenBtn = Instance.new("TextButton")
-OpenBtn.Name = "OpenButton"
-OpenBtn.Size = UDim2.new(0, 50, 0, 50) 
-OpenBtn.Position = UDim2.new(0.03, 0, 0.5, -25) 
-OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
-OpenBtn.Text = "🌪️"
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextSize = 24
-OpenBtn.Visible = false 
-OpenBtn.Parent = ScreenGui
+-- BOTÓN FLOTANTE 
+local OpenBtnFrame = Instance.new("Frame")
+OpenBtnFrame.Name = "OpenBtnFrame"
+OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56) 
+OpenBtnFrame.Position = UDim2.new(0.03, 0, 0.5, -28) 
+OpenBtnFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 26)
+OpenBtnFrame.Visible = false 
+OpenBtnFrame.ClipsDescendants = true
+OpenBtnFrame.Parent = ScreenGui
 
-local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(1, 0)
-OpenCorner.Parent = OpenBtn
+local OpenBtnCorner = Instance.new("UICorner")
+OpenBtnCorner.CornerRadius = UDim.new(1, 0)
+OpenBtnCorner.Parent = OpenBtnFrame
 
 local OpenStroke = Instance.new("UIStroke")
 OpenStroke.Color = Theme.Main
-OpenStroke.Thickness = 1.6
-OpenStroke.Parent = OpenBtn
+OpenStroke.Thickness = 1.8
+OpenStroke.Parent = OpenBtnFrame
 
-MakeSmoothDrag(OpenBtn, OpenBtn)
+local OpenBtn = Instance.new("ImageButton")
+OpenBtn.Name = "OpenButton"
+OpenBtn.Size = UDim2.new(1, -6, 1, -6)
+OpenBtn.Position = UDim2.new(0, 3, 0, 3)
+OpenBtn.Image = "rbxassetid://122763495406604"
+OpenBtn.BackgroundTransparency = 1
+OpenBtn.AutoButtonColor = true
+OpenBtn.Active = true
+OpenBtn.Parent = OpenBtnFrame
+
+local ImageCorner = Instance.new("UICorner")
+ImageCorner.CornerRadius = UDim.new(1, 0)
+ImageCorner.Parent = OpenBtn
+
+
+MakeSmoothDrag(OpenBtnFrame, OpenBtn)
 
 RunService.RenderStepped:Connect(function(dt)
-    if OpenBtn.Visible then
+    if OpenBtnFrame.Visible then
         OpenBtn.Rotation = OpenBtn.Rotation + (dt * 120)
     end
 end)
@@ -351,15 +369,13 @@ local Pages = {}
 local TabButtons = {}
 local isTweening = false
 
---  ANIMACIÓNES DE APERTURA Y CIERRE 
+-- ANIMACIÓNES DE APERTURA Y CIERRE 
 CloseBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
     
-    
     local closeInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
     
-
     local mainClose = TweenService:Create(MainFrame, closeInfo, {
         Size = UDim2.new(0, 430, 0, 250),
         BackgroundTransparency = 1
@@ -386,10 +402,13 @@ CloseBtn.MouseButton1Click:Connect(function()
     
     mainClose.Completed:Connect(function()
         MainFrame.Visible = false
-        OpenBtn.Visible = true
+        OpenBtnFrame.Visible = true
+        OpenBtnFrame.Size = UDim2.new(0, 56, 0, 56)
         OpenBtn.Size = UDim2.new(0, 0, 0, 0)
         
-        local openAnim = TweenService:Create(OpenBtn, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 50, 0, 50)})
+        local openAnim = TweenService:Create(OpenBtn, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, -6, 1, -6)
+        })
         openAnim:Play()
         openAnim.Completed:Connect(function() isTweening = false end)
     end)
@@ -400,11 +419,13 @@ OpenBtn.MouseButton1Click:Connect(function()
     if isTweening then return end
     isTweening = true
     
-    local hideTween = TweenService:Create(OpenBtn, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
+    local hideTween = TweenService:Create(OpenBtn, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        Size = UDim2.new(0, 0, 0, 0)
+    })
     hideTween:Play()
     
     hideTween.Completed:Connect(function()
-        OpenBtn.Visible = false
+        OpenBtnFrame.Visible = false
         
         MainFrame.BackgroundTransparency = 0
         MainStroke.Transparency = 0
@@ -443,6 +464,7 @@ OpenBtn.MouseButton1Click:Connect(function()
         mainOpen.Completed:Connect(function() isTweening = false end)
     end)
 end)
+
 
 
 -- COMPONENTES COLOREADOS
@@ -924,6 +946,15 @@ AddButton(TabMisc, "Server Hop", Theme.Misc)
 AddButton(TabMisc, "Rejoin Server", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
+
+BtnServerHop.MouseButton1Click:Connect(function()
+    
+end)
+
+BtnRejoin.MouseButton1Click:Connect(function()
+    
+    
+end)
 
 
 -- SISTEMA  ESP 
