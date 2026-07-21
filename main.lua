@@ -32,9 +32,9 @@ local Config = {
 
 -- Paleta de Colores por Sección
 local Theme = {
-    Main = Color3.fromRGB(160, 80, 255) 
-    Combat = Color3.fromRGB(160, 80, 255)
-    Visuals = Color3.fromRGB(160, 80, 255)
+    Main = Color3.fromRGB(160, 80, 255), 
+    Combat = Color3.fromRGB(160, 80, 255),
+    Visuals = Color3.fromRGB(160, 80, 255),
     Misc = Color3.fromRGB(160, 80, 255)
 }
  
