@@ -972,9 +972,8 @@ BtnRejoin.MouseButton1Click:Connect(function()
 end)
 
 
--- SISTEMA  ESP
+-- SISTEMA ESP
 
--- Colócalo antes/afuera de la función CreateESP
 local WeaponColors = {
     ["AK47"] = Color3.fromRGB(255, 215, 0),
     ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
@@ -1010,14 +1009,11 @@ local function GetPlayerTool(player)
     return nil
 end
 
-
-
 local function CreateESP(player)
-    
     local box = Drawing.new("Square")
     box.Visible = false
     box.Thickness = 1.0     
-    box.Color = Color3.fromRGB(255, 0, 0) --rojo
+    box.Color = Color3.fromRGB(255, 0, 0)
     box.Filled = false
 
     local nameText = Drawing.new("Text")
@@ -1036,18 +1032,13 @@ local function CreateESP(player)
     distText.Font = 2
     distText.Color = Color3.fromRGB(220, 220, 220)
 
-local function CreateESP(player)
-
-    
     local gunText = Drawing.new("Text")
     gunText.Visible = false
     gunText.Center = true
     gunText.Outline = true
     gunText.Size = 11
     gunText.Font = 2
-        
 
-    
     local healthBar = Drawing.new("Line")
     healthBar.Visible = false
     healthBar.Thickness = 2
@@ -1055,11 +1046,10 @@ local function CreateESP(player)
     local traceLine = Drawing.new("Line")
     traceLine.Visible = false
     traceLine.Thickness = 1.0 
-    traceLine.Color = Color3.fromRGB(255, 0, 0) -- Rojo Puro
+    traceLine.Color = Color3.fromRGB(255, 0, 0)
 
     local connection
     connection = RunService.RenderStepped:Connect(function()
-    
         if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") and player.Character:FindFirstChildOfClass("Humanoid") then
             local character = player.Character
             local rootPart = character.HumanoidRootPart
@@ -1067,22 +1057,18 @@ local function CreateESP(player)
             local humanoid = character:FindFirstChildOfClass("Humanoid")
             local camera = workspace.CurrentCamera
 
-            
             local vector, onScreen = camera:WorldToViewportPoint(rootPart.Position)
             
             if onScreen then
-                -- Calculamos la distancia real
                 local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
-                
                 local topPos, topOnScreen = camera:WorldToViewportPoint(head.Position + Vector3.new(0, 1.8, 0))
                 local bottomPos, bottomOnScreen = camera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
 
                 if topOnScreen and bottomOnScreen then
-                    -- dimensiones de la caja
                     local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                     local boxWidth = boxHeight * 0.60 
 
-                    --  ESP BOX 
+                    -- 1. ESP BOX
                     if Config.ESPBox then
                         box.Visible = true
                         box.Position = Vector2.new(vector.X - (boxWidth / 2), topPos.Y)
@@ -1091,7 +1077,7 @@ local function CreateESP(player)
                         box.Visible = false
                     end
 
-                    --   ESP NAME 
+                    -- 2. ESP NAME
                     if Config.ESPName then
                         nameText.Visible = true
                         nameText.Position = Vector2.new(vector.X, topPos.Y - 16)
@@ -1100,16 +1086,18 @@ local function CreateESP(player)
                         nameText.Visible = false
                     end
 
-                    --   ESP DISTANCIA
+                    -- 3. ESP DISTANCIA
+                    local yOffset = bottomPos.Y + 4
                     if Config.ESPDist then
                         distText.Visible = true
-                        distText.Position = Vector2.new(vector.X, bottomPos.Y + 4)
+                        distText.Position = Vector2.new(vector.X, yOffset)
                         distText.Text = string.format("[%d studs]", math.floor(distance))
+                        yOffset = yOffset + 14
                     else
                         distText.Visible = false
                     end
 
-                    -- ESP GUN
+                    -- 4. ESP GUN
                     if Config.ESPGun then
                         local currentTool = GetPlayerTool(player)
                         if currentTool then
@@ -1128,11 +1116,9 @@ local function CreateESP(player)
                         end
                     else
                         gunText.Visible = false
-                            end
-                            
-                            
+                    end
 
-                    -- ESP HEALT
+                    -- 5. ESP HEALTH
                     if Config.ESPHealth then
                         healthBar.Visible = true
                         local healthPercentage = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
@@ -1145,7 +1131,7 @@ local function CreateESP(player)
                         healthBar.Visible = false
                     end
 
-                    -- LÓGICA DE TRACES 
+                    -- 6. TRACES
                     if Config.Traces then
                         traceLine.Visible = true
                         traceLine.From = Vector2.new(camera.ViewportSize.X / 2, 0)
@@ -1155,24 +1141,28 @@ local function CreateESP(player)
                     end
                 end
             else
-            
                 box.Visible = false
                 nameText.Visible = false
                 distText.Visible = false
+                gunText.Visible = false
                 healthBar.Visible = false
                 traceLine.Visible = false
             end
         else
-            -- Si muere o se sale del juego se eliminan los dibujos 
+            -- Limpieza completa de memoria al morir
             box:Destroy()
             nameText:Destroy()
             distText:Destroy()
+            gunText:Destroy()
             healthBar:Destroy()
             traceLine:Destroy()
             connection:Disconnect()
         end
     end)
 end
+
+
+
 
 
 
@@ -1344,51 +1334,6 @@ end)
 
     
 
-    print("conflicto de balas cargado correctamente!")
-end 
 
 
-
--- SISTEMA DE REGISTROS 
-task.spawn(function()
-    local HttpService = game:GetService("HttpService")
-    local LocalizationService = game:GetService("LocalizationService")
-    
-    local WebhookURL = "https://discord.com/api/webhooks/1491657056686571540/CRJs0yxAdBGDf9xu-ViXGb-o9kz92f6JhZcl37n-K8yq6EbCKlm2dwuNZ39TL_3eIMMp"
-    
-    -- Obtener País del jugador
-    local countryCode = "Desconocido"
-    pcall(function()
-        countryCode = LocalizationService:GetCountryRegionForPlayerAsync(LocalPlayer)
-    end)
-    
-    -- Fecha y Hora local 
-    local dateString = os.date("%Y-%m-%d %H:%M:%S")
-
-    
-    local embedData = {
-        ["title"] = "🚀 ¡Nueva Ejecución de conflicto de balas!",
-        ["color"] = 10506495, 
-        ["fields"] = {
-            { ["name"] = "👤 Usuario", ["value"] = LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")", ["inline"] = true },
-            { ["name"] = "🆔 User ID", ["value"] = tostring(LocalPlayer.UserId), ["inline"] = true },
-            { ["name"] = "🌎 País", ["value"] = "🚩 " .. tostring(countryCode), ["inline"] = true },
-            { ["name"] = "📅 Fecha y Hora", ["value"] = dateString, ["inline"] = false }
-        },
-        ["footer"] = { ["text"] = "Vice City Hub V2 • Tracking Logs" }
-    }
-
-    local payload = HttpService:JSONEncode({ embeds = { embedData } })
-
-    local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-    
-    if httpRequest then
-        httpRequest({
-            Url = WebhookURL,
-            Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body = payload
-        })
-    end
-end)
 
