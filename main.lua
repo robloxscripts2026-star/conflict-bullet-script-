@@ -19,12 +19,29 @@ end)
 
 -- Configuración de Estado General
 local Config = {
-    SpeedValue = 16, SpeedEnabled = false, InfJump = false, Noclip = false, Fly = false,
-    SilentAim = false, FOVEnabled = false, FOVRadius = 100,     
+    -- Player Cheats
+    SpeedValue = 16, 
+    SpeedEnabled = false, 
+    InfJump = false, 
+    Noclip = false, 
+    Fly = false,
     
-    ESPBox = false, ESPName = false, ESPDist = false, ESPHealth = false, Traces = false,
-    ESPGun = false, ESPGunDist = false, -- 👈 Agregados para el ESP Gun
+    -- Combat
+    AimbotEnabled = false,
+    SilentAim = false, 
+    FOVEnabled = false, 
+    FOVRadius = 100,     
     
+    -- Visuals 
+    ESPBox = false, 
+    ESPName = false, 
+    ESPDist = false, 
+    ESPHealth = false, 
+    Traces = false,
+    ESPGun = false, 
+    ESPGunDist = false,
+    
+    -- Misc
     LockUI = false
 }
 
@@ -955,21 +972,64 @@ AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals) -- 👈 Nuevo Toggle
 AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals) -- 👈 Nuevo Toggle
 
-
-
-AddButton(TabMisc, "Server Hop", Theme.Misc)
-AddButton(TabMisc, "Rejoin Server", Theme.Misc)
+local BtnServerHop = AddButton(TabMisc, "Server Hop 🌐", Theme.Misc)
+local BtnRejoin = AddButton(TabMisc, "Rejoin Server 🔄", Theme.Misc)
 AddToggle(TabMisc, "Bloquear Menú🌪️", "LockUI", Theme.Misc)
 
 
 BtnServerHop.MouseButton1Click:Connect(function()
+    BtnServerHop.Text = "Buscando servidor... 🔍"
     
+    local TeleportService = game:GetService("TeleportService")
+    local HttpService = game:GetService("HttpService")
+    local PlaceId = game.PlaceId
+    
+    
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    
+    if success and result and result.data then
+        local targetServer
+        for _, server in ipairs(result.data) do
+    
+            if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                targetServer = server.id
+                break
+            end
+        end
+        
+        if targetServer then
+            TeleportService:TeleportToPlaceInstance(PlaceId, targetServer, LocalPlayer)
+        else
+            BtnServerHop.Text = "No hay otros servers ❌"
+            task.wait(2)
+            BtnServerHop.Text = "Server Hop 🌐"
+        end
+    else
+        BtnServerHop.Text = "Error al buscar ❌"
+        task.wait(2)
+        BtnServerHop.Text = "Server Hop 🌐"
+    end
 end)
 
 BtnRejoin.MouseButton1Click:Connect(function()
+    BtnRejoin.Text = "Reconectando... 🔄"
+    local TeleportService = game:GetService("TeleportService")
     
+    if #Players:GetPlayers() <= 1 then
     
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    else
+    
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
 end)
+
+
+
+
+
 
 
 -- SISTEMA ESP
