@@ -77,13 +77,23 @@ local function MakeSmoothDrag(frame, dragHandle)
 end
 
 
--- ANTI-DUPLICADO DE MENÚ 🚫
-local OldUI = game:GetService("CoreGui"):FindFirstChild("ViceCityV2") 
-    or LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("ViceCityV2")
+-- ANTI-DUPLICADO DEFINITIVO 🚫
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-if OldUI then
-    OldUI:Destroy() 
+local function destroyOldUI(parent)
+    if parent then
+        local old = parent:FindFirstChild("ViceCityV2")
+        if old then old:Destroy() end
+    end
 end
+
+destroyOldUI(CoreGui)
+if LocalPlayer then
+    destroyOldUI(LocalPlayer:FindFirstChild("PlayerGui"))
+end
+
 
 
 --  Contenedor Principal
