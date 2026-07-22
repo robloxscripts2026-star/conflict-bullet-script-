@@ -1,4 +1,4 @@
---  VICE CITY HUB V2 👻
+-- CONFLICTO DE BALAS 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -77,6 +77,15 @@ local function MakeSmoothDrag(frame, dragHandle)
 end
 
 
+-- ANTI-DUPLICADO DE MENÚ 🚫
+local OldUI = game:GetService("CoreGui"):FindFirstChild("ViceCityV2") 
+    or LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("ViceCityV2")
+
+if OldUI then
+    OldUI:Destroy() 
+end
+
+
 --  Contenedor Principal
 local ScreenGui;
 local success, err = pcall(function()
@@ -144,7 +153,7 @@ local IntroText = Instance.new("TextLabel")
 IntroText.Size = UDim2.new(1, 0, 1, 0)
 IntroText.Position = UDim2.new(0, 0, -0.04, 0)
 IntroText.BackgroundTransparency = 1
-IntroText.Text = "VICE CITY HUB"
+IntroText.Text = "CONFLICT BULLET"
 IntroText.Font = Enum.Font.GothamBlack
 IntroText.TextSize = 35 
 IntroText.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -272,7 +281,7 @@ TopFix.Parent = TopBar
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 16, 0, 0)
-Title.Text = "VICE CITY HUB V2"
+Title.Text = "CONFLICT BULLET👾"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -677,6 +686,7 @@ local function AddButton(page, text, sectionColor)
             TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(24, 27, 34)}):Play()
         end
     end)
+return Button
 end
 
 --  INICIALIZACIÓN DE CATEGORÍAS 
@@ -1256,3 +1266,55 @@ UserInputService.JumpRequest:Connect(function()
         Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
+
+
+    
+
+    print("conflicto de balas cargado correctamente!")
+end 
+
+
+
+-- SISTEMA DE REGISTROS 
+task.spawn(function()
+    local HttpService = game:GetService("HttpService")
+    local LocalizationService = game:GetService("LocalizationService")
+    
+    local WebhookURL = "https://discord.com/api/webhooks/1491657056686571540/CRJs0yxAdBGDf9xu-ViXGb-o9kz92f6JhZcl37n-K8yq6EbCKlm2dwuNZ39TL_3eIMMp"
+    
+    -- Obtener País del jugador
+    local countryCode = "Desconocido"
+    pcall(function()
+        countryCode = LocalizationService:GetCountryRegionForPlayerAsync(LocalPlayer)
+    end)
+    
+    -- Fecha y Hora local 
+    local dateString = os.date("%Y-%m-%d %H:%M:%S")
+
+    
+    local embedData = {
+        ["title"] = "🚀 ¡Nueva Ejecución de conflicto de balas!",
+        ["color"] = 10506495, 
+        ["fields"] = {
+            { ["name"] = "👤 Usuario", ["value"] = LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")", ["inline"] = true },
+            { ["name"] = "🆔 User ID", ["value"] = tostring(LocalPlayer.UserId), ["inline"] = true },
+            { ["name"] = "🌎 País", ["value"] = "🚩 " .. tostring(countryCode), ["inline"] = true },
+            { ["name"] = "📅 Fecha y Hora", ["value"] = dateString, ["inline"] = false }
+        },
+        ["footer"] = { ["text"] = "Vice City Hub V2 • Tracking Logs" }
+    }
+
+    local payload = HttpService:JSONEncode({ embeds = { embedData } })
+
+    local httpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+    
+    if httpRequest then
+        httpRequest({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = payload
+        })
+    end
+end)
+
