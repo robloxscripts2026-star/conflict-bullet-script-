@@ -17,17 +17,20 @@ LocalPlayer.CharacterAdded:Connect(function(newChar)
 end)
 
 
-
-
 -- Configuración de Estado General
 local Config = {
     SpeedValue = 16, SpeedEnabled = false, InfJump = false, Noclip = false, Fly = false,
     SilentAim = false, FOVEnabled = false, FOVRadius = 100,     
     
     ESPBox = false, ESPName = false, ESPDist = false, ESPHealth = false, Traces = false,
+    ESPGun = false, ESPGunDist = false, -- 👈 Agregados para el ESP Gun
     
     LockUI = false
 }
+
+
+
+
 
 
 -- Paleta de Colores por Sección
@@ -77,22 +80,7 @@ local function MakeSmoothDrag(frame, dragHandle)
 end
 
 
--- ANTI-DUPLICADO DEFINITIVO 🚫
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
-local function destroyOldUI(parent)
-    if parent then
-        local old = parent:FindFirstChild("ViceCityV2")
-        if old then old:Destroy() end
-    end
-end
-
-destroyOldUI(CoreGui)
-if LocalPlayer then
-    destroyOldUI(LocalPlayer:FindFirstChild("PlayerGui"))
-end
 
 
 
@@ -959,12 +947,15 @@ AddToggle(TabCombat, "Silent Aim", "SilentAim", Theme.Combat)
 
 --AQUI PONES LA LÓGICA DEL AIMBOT Y FOV🗣️🔥🔥🔥🔥🔥
 
-
 AddToggle(TabVisuals, "ESP Box", "ESPBox", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Name", "ESPName", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Distancia", "ESPDist", Theme.Visuals)
 AddToggle(TabVisuals, "ESP Health", "ESPHealth", Theme.Visuals)
 AddToggle(TabVisuals, "Traces", "Traces", Theme.Visuals)
+AddToggle(TabVisuals, "ESP Gun", "ESPGun", Theme.Visuals) -- 👈 Nuevo Toggle
+AddToggle(TabVisuals, "ESP Gun Distancia", "ESPGunDist", Theme.Visuals) -- 👈 Nuevo Toggle
+
+
 
 AddButton(TabMisc, "Server Hop", Theme.Misc)
 AddButton(TabMisc, "Rejoin Server", Theme.Misc)
@@ -981,7 +972,45 @@ BtnRejoin.MouseButton1Click:Connect(function()
 end)
 
 
--- SISTEMA  ESP 
+-- SISTEMA  ESP
+
+-- Colócalo antes/afuera de la función CreateESP
+local WeaponColors = {
+    ["AK47"] = Color3.fromRGB(255, 215, 0),
+    ["AK47-Cosmetic"] = Color3.fromRGB(255, 215, 0),
+    ["Anaconda"] = Color3.fromRGB(200, 0, 0),
+    ["Barbed Baseball Bat"] = Color3.fromRGB(160, 32, 240),
+    ["Combat Axe"] = Color3.fromRGB(160, 32, 240),
+    ["DiamondMop"] = Color3.fromRGB(160, 32, 240),
+    ["Double Barrel"] = Color3.fromRGB(160, 32, 240),
+    ["Draco"] = Color3.fromRGB(160, 32, 240),
+    ["EnergyShot"] = Color3.fromRGB(160, 32, 240),
+    ["GoldMop"] = Color3.fromRGB(0, 122, 255),
+    ["M16"] = Color3.fromRGB(255, 215, 0),
+    ["Mop"] = Color3.fromRGB(128, 128, 128),
+    ["MP5"] = Color3.fromRGB(255, 215, 0),
+    ["Remington"] = Color3.fromRGB(255, 215, 0),
+    ["RightGrip"] = Color3.fromRGB(255, 215, 0),
+    ["RPG"] = Color3.fromRGB(255, 215, 0),
+    ["RPG-ریموٹ فونکشن اصلی"] = Color3.fromRGB(255, 215, 0),
+    ["SilverMop"] = Color3.fromRGB(160, 32, 240),
+    ["sledgehammer"] = Color3.fromRGB(160, 32, 240),
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)
+}
+
+local function GetPlayerTool(player)
+    if player.Character then
+        local tool = player.Character:FindFirstChildOfClass("Tool")
+        if tool then return tool end
+    end
+    if player:FindFirstChild("Backpack") then
+        local tool = player.Backpack:FindFirstChildOfClass("Tool")
+        if tool then return tool end
+    end
+    return nil
+end
+
+
 
 local function CreateESP(player)
     
@@ -1007,6 +1036,18 @@ local function CreateESP(player)
     distText.Font = 2
     distText.Color = Color3.fromRGB(220, 220, 220)
 
+local function CreateESP(player)
+
+    
+    local gunText = Drawing.new("Text")
+    gunText.Visible = false
+    gunText.Center = true
+    gunText.Outline = true
+    gunText.Size = 11
+    gunText.Font = 2
+        
+
+    
     local healthBar = Drawing.new("Line")
     healthBar.Visible = false
     healthBar.Thickness = 2
@@ -1067,6 +1108,29 @@ local function CreateESP(player)
                     else
                         distText.Visible = false
                     end
+
+                    -- ESP GUN
+                    if Config.ESPGun then
+                        local currentTool = GetPlayerTool(player)
+                        if currentTool then
+                            local weaponName = currentTool.Name
+                            gunText.Visible = true
+                            gunText.Color = WeaponColors[weaponName] or Color3.fromRGB(255, 255, 255)
+                            
+                            if Config.ESPGunDist then
+                                gunText.Text = string.format("%s [%d studs]", weaponName, math.floor(distance))
+                            else
+                                gunText.Text = weaponName
+                            end
+                            gunText.Position = Vector2.new(vector.X, yOffset)
+                        else
+                            gunText.Visible = false
+                        end
+                    else
+                        gunText.Visible = false
+                            end
+                            
+                            
 
                     -- ESP HEALT
                     if Config.ESPHealth then
